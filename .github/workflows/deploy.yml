@@ -1,54 +1,22 @@
 name: Deploy
-
-on: push
+on: [push]
 
 jobs:
   deploy:
+    name: Deploy
     runs-on: ubuntu-latest
-
-    env:
-      NITRO_PRESET: deno
-      NODE_OPTIONS: --max_old_space_size=8192
-
     permissions:
-      id-token: write
-      contents: read
+      id-token: write # Needed for auth with Deno Deploy
+      contents: read # Needed to clone the repository
 
     steps:
       - name: Clone repository
         uses: actions/checkout@v3
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v2.2.4
+      # TODO: add a build step here
 
-      - name: Set node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16.x
-          cache: pnpm
-
-      - name: Setup
-        run: npm i -g @antfu/ni
-
-      - name: Install
-        run: nci
-
-      - name: Build
-        run: nr build
-
-      - name: Cleanup
-        run: |
-          rm -rf .nitro
-          rm -rf node_modules
-          rm -rf src
-
-      - name: Move import map to .output
-        run: mv import_map.json .output/import_map.json
-
-      - name: Deploy to Deno Deploy
+      - name: Upload to Deno Deploy
         uses: denoland/deployctl@v1
         with:
-          project: ${{ secrets.DENO_DEPLOY_PROJECT_NAME }}
-          root: .output
-          entrypoint: server/index.ts
-          import-map: ./import_map.json
+          project: "islemci-dlvr"
+          entrypoint: "./main.ts" # TODO: update entrypoint
